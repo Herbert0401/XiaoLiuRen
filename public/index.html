@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小六壬时课</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">小六壬</p>
+        <h1>时课起局</h1>
+      </div>
+      <div class="status-pill" id="deepSeekStatus">DeepSeek 检测中</div>
+    </header>
+
+    <main class="shell">
+      <section class="control-panel" aria-label="起课输入">
+        <form id="readingForm" class="form-stack">
+          <div class="segmented" aria-label="历法">
+            <button class="segment active" type="button" data-mode="solar">公历自动</button>
+            <button class="segment" type="button" data-mode="lunar">农历手动</button>
+          </div>
+
+          <input id="mode" name="mode" type="hidden" value="solar" />
+
+          <div class="field-group" id="solarFields">
+            <label for="datetime">公历日期时间</label>
+            <input id="datetime" name="datetime" type="datetime-local" />
+          </div>
+
+          <div class="manual-grid hidden" id="lunarFields">
+            <div class="field-group">
+              <label for="lunarMonth">农历月</label>
+              <input id="lunarMonth" name="lunarMonth" type="number" min="1" max="12" value="1" />
+            </div>
+            <div class="field-group">
+              <label for="lunarDay">农历日</label>
+              <input id="lunarDay" name="lunarDay" type="number" min="1" max="30" value="1" />
+            </div>
+            <label class="check-row">
+              <input id="isLeapMonth" name="isLeapMonth" type="checkbox" />
+              <span>闰月</span>
+            </label>
+          </div>
+
+          <div class="field-group hidden" id="manualBranchField">
+            <label for="hourBranch">时辰</label>
+            <select id="hourBranch" name="hourBranch">
+              <option value="子">子 23:00-00:59</option>
+              <option value="丑">丑 01:00-02:59</option>
+              <option value="寅">寅 03:00-04:59</option>
+              <option value="卯">卯 05:00-06:59</option>
+              <option value="辰">辰 07:00-08:59</option>
+              <option value="巳">巳 09:00-10:59</option>
+              <option value="午">午 11:00-12:59</option>
+              <option value="未">未 13:00-14:59</option>
+              <option value="申">申 15:00-16:59</option>
+              <option value="酉">酉 17:00-18:59</option>
+              <option value="戌">戌 19:00-20:59</option>
+              <option value="亥">亥 21:00-22:59</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="topic">事项</label>
+            <select id="topic" name="topic">
+              <option value="general">综合</option>
+              <option value="career">事业</option>
+              <option value="wealth">财运</option>
+              <option value="love">感情</option>
+              <option value="health">健康</option>
+              <option value="travel">出行</option>
+              <option value="lost">寻物</option>
+              <option value="contract">合作</option>
+              <option value="study">学业</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="question">具体问题</label>
+            <textarea id="question" name="question" rows="5" maxlength="1200" placeholder="例如：这次合作能不能成？"></textarea>
+          </div>
+
+          <label class="check-row">
+            <input id="includeAi" name="includeAi" type="checkbox" checked />
+            <span>DeepSeek 联合解读</span>
+          </label>
+
+          <button class="primary-button" type="submit" id="submitButton">算命</button>
+          <p class="notice" id="formNotice">民俗参考，不替代医疗、法律、投资等专业判断。</p>
+        </form>
+      </section>
+
+      <section class="workspace" aria-live="polite">
+        <div class="intro-board" id="introBoard">
+          <div class="six-plate" aria-label="六宫盘">
+            <div class="plate-center">六宫</div>
+            <div class="plate-node node-1">大安</div>
+            <div class="plate-node node-2">留连</div>
+            <div class="plate-node node-3">速喜</div>
+            <div class="plate-node node-4">赤口</div>
+            <div class="plate-node node-5">小吉</div>
+            <div class="plate-node node-6">空亡</div>
+          </div>
+          <div>
+            <p class="eyebrow">等待起课</p>
+            <h2>月、日、时顺行六宫</h2>
+            <p class="muted">结果会显示月宫、日宫、终宫、五行关系、事项断语和追问细断。</p>
+          </div>
+        </div>
+
+        <div class="result-board hidden" id="resultBoard">
+          <section class="result-hero">
+            <div>
+              <p class="eyebrow" id="resultTopic">综合</p>
+              <h2 id="finalName">大安</h2>
+              <p id="finalTone" class="hero-tone">安定、守成、可成</p>
+            </div>
+            <div class="seal" id="finalShort">稳</div>
+          </section>
+
+          <section class="meta-strip" id="metaStrip"></section>
+          <section class="trace-grid" id="traceGrid"></section>
+
+          <section class="reading-section">
+            <div class="section-title">
+              <h3>本地底盘</h3>
+              <span id="formulaText"></span>
+            </div>
+            <div class="reading-copy" id="localReading"></div>
+          </section>
+
+          <section class="reading-section">
+            <div class="section-title">
+              <h3>DeepSeek 解读</h3>
+              <span id="aiBadge">待返回</span>
+            </div>
+            <div class="reading-copy" id="aiReading"></div>
+          </section>
+
+          <section class="reading-section" id="followUpPanel">
+            <div class="section-title">
+              <h3>追问细断</h3>
+              <span>同一课</span>
+            </div>
+            <div class="follow-grid">
+              <textarea id="followQuestion" rows="3" maxlength="800" placeholder="继续问：对方真实态度如何？什么时候有消息？"></textarea>
+              <button class="secondary-button" id="followButton" type="button">追问</button>
+            </div>
+            <div class="reading-copy compact" id="followResult"></div>
+          </section>
+
+          <section class="palace-reference">
+            <div class="section-title">
+              <h3>六宫全览</h3>
+              <span>大安 留连 速喜 赤口 小吉 空亡</span>
+            </div>
+            <div class="palace-grid" id="palaceGrid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

@@ -46,11 +46,14 @@ function setMode(mode) {
 async function checkHealth() {
   try {
     const health = await fetchJson('/api/health');
+    if (health?.ok !== true || typeof health.deepSeek !== 'boolean') {
+      throw new Error('后端健康检查格式不正确');
+    }
     statusPill.textContent = health.deepSeek ? `DeepSeek ${health.model}` : 'DeepSeek 未配置';
     statusPill.classList.toggle('ready', health.deepSeek);
     statusPill.classList.toggle('offline', !health.deepSeek);
   } catch {
-    statusPill.textContent = '服务未启动';
+    statusPill.textContent = '后端未连接';
     statusPill.classList.add('offline');
   }
 }
@@ -283,7 +286,13 @@ function normalizeListItems(value) {
 
 async function fetchJson(url, options) {
   const response = await fetch(url, options);
-  const data = await response.json().catch(() => ({}));
+  const rawText = await response.text();
+  let data;
+  try {
+    data = rawText ? JSON.parse(rawText) : {};
+  } catch {
+    throw new Error('接口未返回 JSON，请确认线上部署的是 Node Web Service');
+  }
   if (!response.ok) {
     throw new Error(data.error || '请求失败');
   }
